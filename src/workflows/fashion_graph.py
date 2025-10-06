@@ -1,6 +1,5 @@
 from langgraph.graph import StateGraph
 from models.state import FashionState
-from workflows.nodes.preprocess_node import preprocess_node
 from workflows.nodes.prompt_node import prompt_node
 from workflows.nodes.generate_node import generate_node
 from workflows.nodes.quality_node import quality_node
@@ -16,17 +15,16 @@ def run_workflow(description: str, image_bytes: bytes = None, filename: str = "g
     graph = StateGraph(FashionState)
 
     # Define graph flow
-    graph.add_node("preprocess", preprocess_node)
+    # graph.add_node("preprocess", preprocess_node)
     graph.add_node("prompt", prompt_node)
     graph.add_node("generate", generate_node)
     graph.add_node("quality", quality_node)
 
     # Set flow order
-    graph.add_edge("preprocess", "prompt")
     graph.add_edge("prompt", "generate")
     graph.add_edge("generate", "quality")
 
-    graph.set_entry_point("preprocess")
+    graph.set_entry_point("prompt")
 
     chain = graph.compile()
 

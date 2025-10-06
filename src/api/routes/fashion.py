@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from typing import Optional
 from workflows.fashion_graph import run_workflow
-from ..schemas import GenerateResponse
+from models.schemas import GenerateResponse
 
 router = APIRouter()
 
