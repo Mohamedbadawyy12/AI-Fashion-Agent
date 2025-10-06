@@ -1,5 +1,5 @@
 import logging
-from services.stability_client import generate_image_from_prompt
+from services.gemini_image_gen import generate_image_from_prompt
 
 logging.basicConfig(level=logging.INFO)
 

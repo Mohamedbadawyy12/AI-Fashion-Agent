@@ -63,7 +63,7 @@ def generate_image_from_prompt(prompt: str, init_image: bytes = None) -> bytes:
             },
             data={
                 "text_prompts[0][text]": prompt,
-                "image_strength": 0.65,
+                "image_strength": 0.35,
                 "cfg_scale": 7,
                 "samples": 1,
                 "steps": 30,

@@ -1,4 +1,4 @@
-from services.gemini_client import enhance_prompt_with_gemini
+from services.gemini_prompt_enchancer import enhance_prompt_with_gemini
 
 def prompt_node(state):
     enhanced = enhance_prompt_with_gemini(state.description)
