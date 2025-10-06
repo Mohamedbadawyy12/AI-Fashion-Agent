@@ -25,6 +25,6 @@ async def generate(description: str = Form(...), product_image: Optional[UploadF
     except Exception as e:
         import traceback
 
-        traceback.print_exc()  # ⬅️ ده اللي هيطبع الخطأ الحقيقي في التيرمنال
+        traceback.print_exc()  
 
         raise HTTPException(status_code=500, detail=str(e))
