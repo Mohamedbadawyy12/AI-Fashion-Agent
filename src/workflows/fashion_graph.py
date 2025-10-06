@@ -5,16 +5,23 @@ from workflows.nodes.prompt_node import prompt_node
 from workflows.nodes.generate_node import generate_node
 from workflows.nodes.quality_node import quality_node
 
-def run_workflow(description: str, image_bytes: bytes, filename: str) -> str:
-    """Executes the LangGraph workflow end-to-end."""
+
+def run_workflow(description: str, image_bytes: bytes = None, filename: str = "generated.png") -> str:
+    """
+    Executes the LangGraph workflow end-to-end.
+    - If image_bytes is provided → image-to-image generation
+    - Otherwise → text-to-image generation
+    """
+
     graph = StateGraph(FashionState)
 
-    # define flow
+    # Define graph flow
     graph.add_node("preprocess", preprocess_node)
     graph.add_node("prompt", prompt_node)
     graph.add_node("generate", generate_node)
     graph.add_node("quality", quality_node)
 
+    # Set flow order
     graph.add_edge("preprocess", "prompt")
     graph.add_edge("prompt", "generate")
     graph.add_edge("generate", "quality")
@@ -23,7 +30,15 @@ def run_workflow(description: str, image_bytes: bytes, filename: str) -> str:
 
     chain = graph.compile()
 
-    state = FashionState(description=description, product_image=image_bytes, filename=filename)
+    # Build state object
+    state = FashionState(
+        description=description,
+        product_image=image_bytes,
+        filename=filename,
+        mode="image-to-image" if image_bytes else "text-to-image"
+    )
+
+    # Run workflow
     final_state = chain.invoke(state)
 
-    return final_state.output_path
+    return final_state.get("output_path")
