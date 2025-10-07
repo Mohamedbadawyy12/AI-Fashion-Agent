@@ -11,3 +11,4 @@ class FashionState(BaseModel):
     output_path: Optional[str] = None
     quality_assessment: Optional[Dict] = None
     retry_count: int = 0
+    text_correction_applied: bool = False

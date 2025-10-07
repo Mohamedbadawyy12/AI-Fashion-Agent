@@ -1,10 +1,9 @@
 import base64
 import logging
 import json
-from io import BytesIO
-from PIL import Image
-import google.generativeai as genai
 from core.config import settings
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.messages import HumanMessage, SystemMessage
 
 logging.basicConfig(level=logging.INFO)
 
@@ -14,52 +13,65 @@ def image_bytes_to_base64(image_bytes: bytes) -> str:
 
 def assess_image_quality(state) -> dict:
     """
-    Analyzes the generated image against the prompt and original product image.
-    Returns a dictionary with a 'decision' ('accept' or 'reject') and a 'reason'.
+    Provides a detailed assessment using Langchain's ChatGoogleGenerativeAI.
     """
     try:
-        logging.info("🧐 Kicking off Quality Assessor Service...")
-        
-        genai.configure(api_key=settings.GOOGLE_API_KEY)
-        # 1. استخدام نفس النموذج الذي يعمل في توليد الصور لضمان التوافق
-        model = genai.GenerativeModel('gemini-2.5-flash-image-preview')
+        logging.info("🧐 Kicking off Detailed Quality Assessor Service ...")
+
+        llm = ChatGoogleGenerativeAI(
+            model="gemini-2.5-flash-image-preview",
+            google_api_key=settings.GOOGLE_API_KEY,
+        )
 
         system_prompt = f"""
-        You are a meticulous Quality Assurance Art Director at a high-end fashion agency.
-        Your task is to critically evaluate a newly generated AI image based on two criteria: the creative brief and the original product.
+        You are a meticulous Quality Assurance Art Director. Your task is to provide a two-part evaluation for a generated AI image.
 
         **1. Creative Brief (The Prompt):**
         "{state.enhanced_prompt}"
 
         **2. The Task:**
-        Look at the "Generated Image" and compare it to the "Original Product Image" and the "Creative Brief".
-        - Does the generated image follow the creative brief's mood, setting, and description?
-        - Is the product from the original image represented ACCURATELY in the generated image? (Check for colors, shapes, and especially text/logos).
-        - Are there any obvious AI flaws like distorted faces, hands with extra fingers, or unnatural textures?
+        First, evaluate the **Overall Image Quality**. Does it match the brief's mood, setting, and description? Are there AI flaws (bad hands, etc.)?
+        Second, evaluate the **Text/Logo Accuracy**. Compare the text/logo on the generated image to the original product. Is it 100% accurate?
 
         **3. Your Decision:**
-        Based on your analysis, respond with ONLY a JSON object in the following format:
-        - If the image is excellent and ready for the client, use:
-          {{"decision": "accept", "reason": "A brief explanation of why it's good."}}
-        - If the image has flaws and needs to be regenerated, use:
-          {{"decision": "reject", "reason": "A brief, constructive critique of what went wrong, which will be used to improve the next attempt."}}
-        
-        Your entire response must be a single, valid JSON object and nothing else.
+        Respond with ONLY a JSON object. Do not add any other text.
+        - `image_decision`: Can be "accept" or "reject".
+        - `text_decision`: Can be "accept" or "reject".
+        - `reason`: A brief explanation for your decisions.
         """
-        
-        original_product_img = Image.open(BytesIO(state.product_image)) if state.product_image else None
-        generated_img = Image.open(BytesIO(state.generated_image))
-        
-        contents = [system_prompt, "Original Product Image:", original_product_img, "Generated Image:", generated_img]
-        contents = [part for part in contents if part is not None]
 
-        response = model.generate_content(contents)
-        json_response_text = response.text.strip().replace("```json", "").replace("```", "")
+        # Prepare the content for the HumanMessage
+        content_parts = [
+            {"type": "text", "text": "Please evaluate the generated image based on my instructions and the original product image provided."},
+        ]
+        
+        # Add original product image if it exists
+        if state.product_image:
+            original_base64 = image_bytes_to_base64(state.product_image)
+            content_parts.append({
+                "type": "image_url",
+                "image_url": {"url": f"data:image/jpeg;base64,{original_base64}"}
+            })
+
+        # Add the generated image
+        generated_base64 = image_bytes_to_base64(state.generated_image)
+        content_parts.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:image/jpeg;base64,{generated_base64}"}
+        })
+        
+        message = [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=content_parts)
+        ]
+
+        response = llm.invoke(message)
+        json_response_text = response.content.strip().replace("```json", "").replace("```", "")
         assessment = json.loads(json_response_text)
         
-        logging.info(f"✅ Quality Assessment Complete: Decision is '{assessment.get('decision')}' because '{assessment.get('reason')}'")
+        logging.info(f"✅ Detailed Assessment: Image={assessment.get('image_decision')}, Text={assessment.get('text_decision')}. Reason: {assessment.get('reason')}")
         return assessment
 
     except Exception as e:
         logging.error(f"❌ Quality Assessor Service failed: {e}")
-        return {"decision": "accept", "reason": "QA service failed, accepting by default."}
+        return {"image_decision": "accept", "text_decision": "accept", "reason": "QA service failed."}

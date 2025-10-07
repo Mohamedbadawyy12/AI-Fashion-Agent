@@ -8,3 +8,6 @@ requests
 Pillow
 rembg
 python-multipart
+numpy
+opencv-python
+easyocr
