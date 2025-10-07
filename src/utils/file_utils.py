@@ -2,10 +2,15 @@ import os
 import uuid
 from pathlib import Path
 
-def save_temp_image(image_bytes: bytes, filename: str) -> str:
-    # استخدم المسار الصحيح لمجلد المشروع
-    base_dir = Path(__file__).resolve().parent.parent  # يرجع لـ src/
-    output_dir = base_dir / "static" / "outputs"
+def save_image(image_bytes: bytes, filename: str, status_folder: str) -> str:
+    """
+    Saves the image to a specified subfolder (e.g., 'success', 'failed')
+    within the main static outputs directory.
+    """
+
+    base_dir = Path(__file__).resolve().parent.parent
+
+    output_dir = base_dir / "static" / "outputs" / status_folder
     output_dir.mkdir(parents=True, exist_ok=True)
 
     output_filename = f"{uuid.uuid4().hex}_{filename}"
@@ -14,5 +19,5 @@ def save_temp_image(image_bytes: bytes, filename: str) -> str:
     with open(output_path, "wb") as f:
         f.write(image_bytes)
 
-    # ارجّع المسار الكامل
+
     return str(output_path)

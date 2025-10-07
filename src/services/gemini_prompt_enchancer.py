@@ -18,19 +18,22 @@ def enhance_prompt_with_gemini(base_prompt: str) -> str:
         )
 
         structured = f"""
-        You are an expert fashion photographer and a creative director, known for crafting highly detailed prompts for AI image generation.
-        Your task is to take a user's simple description and expand it into a rich, detailed, single-paragraph photographic prompt.
+        You are a world-class creative director at a leading AI modeling agency. Your expertise lies in translating client briefs into rich, detailed, and executable prompts for AI image generation.
 
-        **User's Description:** "{base_prompt}"
+        **Client's Brief:** "{base_prompt}"
+
+        **Your Task:**
+        Based *only* on the client's brief, expand it into a comprehensive, single-paragraph photographic prompt. Your goal is to select the most fitting elements to create a marketable and high-impact commercial image.
 
         **Instructions:**
-        - **Subject & Clothing:** Start by describing the model and the clothing item from the user's description in great detail. Mention fabric textures (e.g., "soft cotton," "glossy silk").
-        - **Setting:** Place the model in a specific, atmospheric Egyptian urban setting (e.g., "a historic balcony in Zamalek overlooking the Nile," "a bustling alley in Khan el-Khalili at golden hour," "a modern rooftop cafe in New Cairo at dusk").
-        - **Pose:** Describe a natural and elegant pose. (e.g., "leaning gently against a railing," "walking confidently towards the camera," "sitting gracefully on a vintage chair").
-        - **Camera & Shot:** Specify the camera shot and lens. (e.g., "Medium full-shot with a 85mm lens," "Close-up portrait with a 50mm f/1.8 lens," "Dynamic wide-angle shot").
-        - **Lighting:** Describe the lighting in detail. (e.g., "Warm, cinematic golden hour lighting," "Soft, diffused morning light," "Dramatic, high-contrast studio lighting").
-        - **Aesthetic & Mood:** Define the overall mood. (e.g., "Aesthetic: editorial fashion, moody, cinematic, nostalgic").
-        - **Final Output:** Combine all these elements into a single, cohesive, and highly descriptive paragraph. Do not return a list or bullet points.
+        1.  **Analyze the Brief:** First, understand the product and the core feeling the client wants (e.g., "luxury," "youthful," "rugged," "natural").
+        2.  **Select a Setting:** Based on your analysis, choose a compelling setting. Do NOT default to one location type. Consider options like: a minimalist high-tech studio, a vibrant urban street-style scene (e.g., Tokyo, London), a serene natural landscape (e.g., Swiss Alps, coastal beach), a luxurious and opulent interior, or a rustic countryside backdrop. The setting must complement the product.
+        3.  **Define the Model:** Describe a model whose ethnicity, style, and expression fit the brand and setting.
+        4.  **Clothing & Styling:** Describe the model's attire in detail, ensuring it aligns with the overall aesthetic and doesn't clash with the product.
+        5.  **Pose & Interaction:** Detail a natural, confident pose where the model interacts organically with the product. The product must be clearly visible, held naturally, and presented accurately without distortion to its shape, size, or branding.
+        6.  **Photography Specs:** Specify the camera shot (e.g., "Medium shot," "Dynamic full-body shot"), lens (e.g., "85mm prime lens," "35mm wide-angle"), and lighting (e.g., "Soft diffused studio light," "Dramatic golden hour sunlight," "High-contrast cinematic lighting").
+        7.  **Mood & Aesthetic:** Define the final mood (e.g., "Aesthetic: clean, commercial, sophisticated, energetic, moody").
+        8.  **Final Output:** Weave all these elements into one cohesive, highly-descriptive paragraph. Do not use lists or placeholders. The final text must be a ready-to-use prompt.
         """
 
         message = HumanMessage(content=structured)
