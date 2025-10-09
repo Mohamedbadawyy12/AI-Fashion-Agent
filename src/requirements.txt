@@ -11,3 +11,5 @@ python-multipart
 numpy
 opencv-python
 easyocr
+langfuse
+langchain  
